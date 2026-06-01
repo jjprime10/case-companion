@@ -1,5 +1,17 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, UserPlus, Search, Shield, LogOut, Scale, Moon, Sun } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  UserPlus,
+  Search,
+  Shield,
+  LogOut,
+  Scale,
+  Moon,
+  Sun,
+  Calendar as CalendarIcon,
+  ScrollText,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +31,7 @@ const items = [
   { title: "Painel", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Novo Cliente", url: "/clientes/novo", icon: UserPlus, requireWrite: true },
+  { title: "Calendário", url: "/calendario", icon: CalendarIcon },
   { title: "Buscar", url: "/buscar", icon: Search },
 ];
 
@@ -76,6 +89,14 @@ export function AppSidebar({
                     <Link to="/usuarios">
                       <Shield className="h-4 w-4" />
                       <span>Usuários & Permissões</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/auditoria")}>
+                    <Link to="/auditoria">
+                      <ScrollText className="h-4 w-4" />
+                      <span>Auditoria</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_reminders: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          id: string
+          minutes_before: number
+          notified_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          id?: string
+          minutes_before: number
+          notified_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          id?: string
+          minutes_before?: number
+          notified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_reminders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          assigned_to: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          location: string | null
+          starts_at: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          location?: string | null
+          starts_at: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          location?: string | null
+          starts_at?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity: string
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity: string
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity?: string
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       client_files: {
         Row: {
           category: string | null
@@ -206,6 +319,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          direction: string
+          id: string
+          message: string
+          phone: string
+          sent_by: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          message: string
+          phone: string
+          sent_by?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          message?: string
+          phone?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
