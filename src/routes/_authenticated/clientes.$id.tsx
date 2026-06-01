@@ -36,6 +36,7 @@ import {
 import { formatBytes, formatDocument, formatPhone, fileCategory } from "@/lib/format-br";
 import { useAuth } from "@/hooks/use-auth";
 import { ClientForm, type ClientFormValues } from "@/components/client-form";
+import { WhatsAppPanel } from "@/components/whatsapp-panel";
 
 export const Route = createFileRoute("/_authenticated/clientes/$id")({
   head: () => ({ meta: [{ title: "Cliente — Sistema Jurídico" }] }),
@@ -303,6 +304,7 @@ function ClientDetail() {
         <TabsList>
           <TabsTrigger value="files">Arquivos ({files?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="notes">Notas ({notes?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
         </TabsList>
 
         <TabsContent value="files" className="space-y-4">
@@ -408,6 +410,10 @@ function ClientDetail() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="whatsapp">
+          <WhatsAppPanel clientId={id} defaultPhone={client.phone} />
         </TabsContent>
       </Tabs>
     </div>

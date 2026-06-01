@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { UserPlus, Trash2, Loader2 } from "lucide-react";
+import { UserPlus, Trash2, Loader2, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth, ROLE_LABELS, type AppRole } from "@/hooks/use-auth";
-import { listUsers, createUser, updateUserRole, deleteUser } from "@/lib/admin.functions";
+import {
+  listUsers,
+  createUser,
+  updateUserRole,
+  deleteUser,
+  resetUserPassword,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({ meta: [{ title: "Usuários — Sistema Jurídico" }] }),
@@ -51,6 +57,7 @@ function UsersPage() {
   const fCreate = useServerFn(createUser);
   const fUpdate = useServerFn(updateUserRole);
   const fDelete = useServerFn(deleteUser);
+  const fReset = useServerFn(resetUserPassword);
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -58,6 +65,8 @@ function UsersPage() {
   const [name, setName] = useState("");
   const [role, setRole] = useState<AppRole>("advogado");
   const [busy, setBusy] = useState(false);
+  const [resetFor, setResetFor] = useState<string | null>(null);
+  const [resetPwd, setResetPwd] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -101,6 +110,18 @@ function UsersPage() {
       await fDelete({ data: { user_id: uid } });
       toast.success("Usuário removido");
       qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const doReset = async () => {
+    if (!resetFor || resetPwd.length < 8) return;
+    try {
+      await fReset({ data: { user_id: resetFor, password: resetPwd } });
+      toast.success("Senha redefinida");
+      setResetFor(null);
+      setResetPwd("");
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -204,6 +225,17 @@ function UsersPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Redefinir senha"
+                onClick={() => {
+                  setResetFor(u.id);
+                  setResetPwd("");
+                }}
+              >
+                <KeyRound className="h-4 w-4" />
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" disabled={u.id === user?.id}>
@@ -227,6 +259,30 @@ function UsersPage() {
           ))}
         </CardContent>
       </Card>
+      <Dialog open={!!resetFor} onOpenChange={(o) => !o && setResetFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label>Nova senha (mín. 8 caracteres)</Label>
+            <Input
+              type="text"
+              minLength={8}
+              value={resetPwd}
+              onChange={(e) => setResetPwd(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Compartilhe a nova senha com o usuário. Ele poderá alterá-la depois.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={doReset} disabled={resetPwd.length < 8}>
+              Salvar nova senha
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
