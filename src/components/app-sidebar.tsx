@@ -96,7 +96,7 @@ export function AppSidebar({
                   <SidebarMenuButton asChild isActive={isActive("/auditoria")}>
                     <Link to="/auditoria">
                       <ScrollText className="h-4 w-4" />
-                      <span>Auditoria</span>
+                      <span>Relatório de Atividades</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
