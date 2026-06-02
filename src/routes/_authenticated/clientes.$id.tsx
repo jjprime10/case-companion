@@ -234,14 +234,20 @@ function ClientDetail() {
         </Button>
         <div className="flex-1" />
         {client.phone && (
-          <Button variant="outline" asChild>
-            <a
-              href={`https://web.whatsapp.com/send?phone=${(client.phone.startsWith("55") ? client.phone.replace(/\D/g, "") : "55" + client.phone.replace(/\D/g, ""))}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MessageCircle className="h-4 w-4" /> WhatsApp Web
-            </a>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const phone = client.phone!.startsWith("55")
+                ? client.phone!.replace(/\D/g, "")
+                : "55" + client.phone!.replace(/\D/g, "");
+              window.open(
+                `https://web.whatsapp.com/send?phone=${phone}`,
+                "whatsapp-web",
+                "width=1000,height=700,resizable=yes,scrollbars=yes,status=yes"
+              );
+            }}
+          >
+            <MessageCircle className="h-4 w-4" /> WhatsApp Web
           </Button>
         )}
         {canWrite && (
