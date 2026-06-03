@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCPF, formatCNPJ, formatPhone, onlyDigits } from "@/lib/format-br";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 
 type PersonType = "PF" | "PJ";
 
@@ -46,11 +47,14 @@ export function ClientForm({
   initial?: ClientFormValues;
   onSaved: (id: string) => void;
 }) {
+  const { user, isMaster } = useAuth();
+  const isEditing = !!initial?.id;
   const [v, setV] = useState<ClientFormValues>(
     initial ?? {
       person_type: "PF",
       document: "",
       name: "",
+      responsible_user_id: user?.id ?? null,
     },
   );
   const [busy, setBusy] = useState(false);
@@ -98,6 +102,8 @@ export function ClientForm({
       return;
     }
     setBusy(true);
+    const { data: u } = await supabase.auth.getUser();
+    const currentUid = u.user?.id ?? null;
     const payload = {
       person_type: v.person_type,
       document: doc,
@@ -112,7 +118,11 @@ export function ClientForm({
       case_number: v.case_number?.trim() || null,
       case_status: v.case_status?.trim() || null,
       court: v.court?.trim() || null,
-      responsible_user_id: v.responsible_user_id || null,
+      responsible_user_id: isEditing
+        ? isMaster
+          ? v.responsible_user_id || null
+          : (initial?.responsible_user_id ?? null)
+        : currentUid,
       notes_summary: v.notes_summary?.trim() || null,
     };
     let saved;
@@ -125,10 +135,9 @@ export function ClientForm({
         .single();
       saved = { data, error };
     } else {
-      const { data: u } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("clients")
-        .insert({ ...payload, created_by: u.user?.id })
+        .insert({ ...payload, created_by: currentUid })
         .select("id")
         .single();
       saved = { data, error };
@@ -263,22 +272,33 @@ export function ClientForm({
           </div>
           <div className="space-y-2">
             <Label>Advogado responsável</Label>
-            <Select
-              value={v.responsible_user_id ?? "none"}
-              onValueChange={(val) => set("responsible_user_id", val === "none" ? null : val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— Nenhum —</SelectItem>
-                {lawyers?.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isMaster && isEditing ? (
+              <Select
+                value={v.responsible_user_id ?? "none"}
+                onValueChange={(val) =>
+                  set("responsible_user_id", val === "none" ? null : val)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Nenhum —</SelectItem>
+                  {lawyers?.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="text-sm text-muted-foreground border rounded-md px-3 py-2 bg-muted/40">
+                {isEditing
+                  ? lawyers?.find((l) => l.id === v.responsible_user_id)?.name ??
+                    "— Não atribuído —"
+                  : "Será atribuído automaticamente a você"}
+              </div>
+            )}
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label>Resumo / observações iniciais</Label>
