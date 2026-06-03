@@ -21,7 +21,7 @@ export const listUsers = createServerFn({ method: "GET" })
     await assertMaster(context.userId);
     const { data: profiles, error } = await supabaseAdmin
       .from("profiles")
-      .select("id, email, full_name, created_at")
+      .select("id, email, full_name, created_at, supervisor_id")
       .order("created_at");
     if (error) throw new Error(error.message);
     const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
