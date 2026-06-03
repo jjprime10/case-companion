@@ -41,6 +41,7 @@ import {
   updateUserRole,
   deleteUser,
   resetUserPassword,
+  updateUserSupervisor,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
@@ -58,6 +59,7 @@ function UsersPage() {
   const fUpdate = useServerFn(updateUserRole);
   const fDelete = useServerFn(deleteUser);
   const fReset = useServerFn(resetUserPassword);
+  const fSupervisor = useServerFn(updateUserSupervisor);
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -126,6 +128,18 @@ function UsersPage() {
       toast.error((err as Error).message);
     }
   };
+
+  const changeSupervisor = async (uid: string, supervisor_id: string | null) => {
+    try {
+      await fSupervisor({ data: { user_id: uid, supervisor_id } });
+      toast.success("Supervisor atualizado");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const lawyers = (data ?? []).filter((u) => u.role === "advogado" || u.role === "master");
 
   return (
     <div className="space-y-5 max-w-4xl">
@@ -208,6 +222,27 @@ function UsersPage() {
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{u.full_name ?? u.email}</div>
                 <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                {(u.role === "assistente" || u.role === "visualizador") && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Supervisor:</span>
+                    <Select
+                      value={u.supervisor_id ?? "none"}
+                      onValueChange={(v) => changeSupervisor(u.id, v === "none" ? null : v)}
+                    >
+                      <SelectTrigger className="h-8 w-56">
+                        <SelectValue placeholder="Sem supervisor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem supervisor</SelectItem>
+                        {lawyers.map((l) => (
+                          <SelectItem key={l.id} value={l.id}>
+                            {l.full_name ?? l.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <Select
                 value={u.role ?? ""}
