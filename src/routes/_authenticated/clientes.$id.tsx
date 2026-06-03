@@ -32,7 +32,6 @@ import {
   Video,
   Sheet,
   File as FileIcon,
-  MessageCircle,
 } from "lucide-react";
 import { formatBytes, formatDocument, formatPhone, fileCategory } from "@/lib/format-br";
 import { useAuth } from "@/hooks/use-auth";
@@ -233,23 +232,6 @@ function ClientDetail() {
           </Link>
         </Button>
         <div className="flex-1" />
-        {client.phone && (
-          <Button
-            variant="outline"
-            onClick={() => {
-              const phone = client.phone!.startsWith("55")
-                ? client.phone!.replace(/\D/g, "")
-                : "55" + client.phone!.replace(/\D/g, "");
-              window.open(
-                `https://web.whatsapp.com/send?phone=${phone}`,
-                "whatsapp-web",
-                "width=1000,height=700,resizable=yes,scrollbars=yes,status=yes"
-              );
-            }}
-          >
-            <MessageCircle className="h-4 w-4" /> WhatsApp Web
-          </Button>
-        )}
         {canWrite && (
           <>
             <Button variant="outline" onClick={() => setEditing(true)}>
