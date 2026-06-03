@@ -21,7 +21,7 @@ export const listUsers = createServerFn({ method: "GET" })
     await assertMaster(context.userId);
     const { data: profiles, error } = await supabaseAdmin
       .from("profiles")
-      .select("id, email, full_name, created_at")
+      .select("id, email, full_name, created_at, supervisor_id")
       .order("created_at");
     if (error) throw new Error(error.message);
     const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
@@ -113,5 +113,34 @@ export const resetUserPassword = createServerFn({ method: "POST" })
       entity_id: data.user_id,
       details: {},
     });
+    return { ok: true };
+  });
+
+export const updateUserSupervisor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        supervisor_id: z.string().uuid().nullable(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertMaster(context.userId);
+    if (data.supervisor_id) {
+      const { data: sup } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.supervisor_id)
+        .in("role", ["advogado", "master"])
+        .maybeSingle();
+      if (!sup) throw new Error("Supervisor deve ser um Advogado ou Master.");
+    }
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ supervisor_id: data.supervisor_id })
+      .eq("id", data.user_id);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
