@@ -281,6 +281,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          supervisor_id: string | null
           updated_at: string
         }
         Insert: {
@@ -288,6 +289,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          supervisor_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -295,9 +297,18 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          supervisor_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -325,8 +336,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_client: {
+        Args: { _created_by: string; _responsible: string }
+        Returns: boolean
+      }
       can_upload_files: { Args: { _user_id: string }; Returns: boolean }
       can_write_clients: { Args: { _user_id: string }; Returns: boolean }
+      get_supervisor: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
