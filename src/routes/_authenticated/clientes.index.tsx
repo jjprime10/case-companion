@@ -31,16 +31,21 @@ function ClientsList() {
     queryKey: ["lawyers"],
     enabled: isMaster,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: roles, error } = await supabase
         .from("user_roles")
-        .select("user_id, profiles!inner(full_name, email)")
+        .select("user_id, role")
         .in("role", ["master", "advogado"]);
-      return (
-        data?.map((r) => {
-          const p = r.profiles as unknown as { full_name: string | null; email: string | null };
-          return { id: r.user_id, name: p.full_name ?? p.email ?? "" };
-        }) ?? []
-      );
+      if (error) throw error;
+      const ids = roles?.map((r) => r.user_id) ?? [];
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      return ids.map((id) => {
+        const p = profs?.find((x) => x.id === id);
+        return { id, name: p?.full_name ?? p?.email ?? "Usuário" };
+      });
     },
   });
 
