@@ -85,6 +85,20 @@ function ClientDetail() {
     },
   });
 
+  const responsibleId = client?.responsible_user_id ?? null;
+  const { data: responsible } = useQuery({
+    queryKey: ["responsible", responsibleId],
+    enabled: !!responsibleId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", responsibleId!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   if (isLoading) return <p className="text-sm text-muted-foreground">Carregando...</p>;
   if (!client) return <p className="text-sm text-muted-foreground">Cliente não encontrado.</p>;
 
@@ -290,6 +304,14 @@ function ClientDetail() {
           <Info label="Processo nº" value={client.case_number} />
           <Info label="Status" value={client.case_status} />
           <Info label="Vara / Tribunal" value={client.court} />
+          <Info
+            label="Advogado responsável"
+            value={
+              client.responsible_user_id
+                ? (responsible?.full_name ?? responsible?.email ?? "—")
+                : "Não atribuído"
+            }
+          />
           {client.notes_summary && (
             <div className="sm:col-span-2">
               <p className="text-xs uppercase text-muted-foreground mb-1">Resumo</p>
