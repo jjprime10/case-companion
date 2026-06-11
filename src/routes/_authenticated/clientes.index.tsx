@@ -6,6 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, UserPlus, Building2, User } from "lucide-react";
 import { formatDocument } from "@/lib/format-br";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,15 +23,38 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
 });
 
 function ClientsList() {
-  const { canWrite } = useAuth();
+  const { canWrite, isMaster } = useAuth();
   const [q, setQ] = useState("");
+  const [lawyerFilter, setLawyerFilter] = useState<string>("all");
+
+  const { data: lawyers } = useQuery({
+    queryKey: ["lawyers"],
+    enabled: isMaster,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("user_id, profiles!inner(full_name, email)")
+        .in("role", ["master", "advogado"]);
+      return (
+        data?.map((r) => {
+          const p = r.profiles as unknown as { full_name: string | null; email: string | null };
+          return { id: r.user_id, name: p.full_name ?? p.email ?? "" };
+        }) ?? []
+      );
+    },
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ["clients", q],
+    queryKey: ["clients", q, lawyerFilter],
     queryFn: async () => {
       let query = supabase
         .from("clients")
-        .select("id, name, document, person_type, email, case_status, trade_name")
+        .select(
+          "id, name, document, person_type, email, case_status, trade_name, responsible_user_id",
+        )
         .order("name");
+      if (lawyerFilter === "unassigned") query = query.is("responsible_user_id", null);
+      else if (lawyerFilter !== "all") query = query.eq("responsible_user_id", lawyerFilter);
       if (q.trim()) {
         const digits = q.replace(/\D/g, "");
         const filters = [`name.ilike.%${q}%`, `trade_name.ilike.%${q}%`];
@@ -52,14 +82,32 @@ function ClientsList() {
           </Button>
         )}
       </div>
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome ou CPF/CNPJ..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex flex-wrap gap-3">
+        <div className="relative max-w-md flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou CPF/CNPJ..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {isMaster && (
+          <Select value={lawyerFilter} onValueChange={setLawyerFilter}>
+            <SelectTrigger className="w-[230px]">
+              <SelectValue placeholder="Advogado responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os advogados</SelectItem>
+              <SelectItem value="unassigned">Sem responsável</SelectItem>
+              {lawyers?.map((l) => (
+                <SelectItem key={l.id} value={l.id}>
+                  {l.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
@@ -90,6 +138,12 @@ function ClientsList() {
                       <Badge variant="secondary" className="mt-2">
                         {c.case_status}
                       </Badge>
+                    )}
+                    {isMaster && (
+                      <div className="text-xs text-muted-foreground mt-2">
+                        {lawyers?.find((l) => l.id === c.responsible_user_id)?.name ??
+                          "Sem responsável"}
+                      </div>
                     )}
                   </div>
                 </div>

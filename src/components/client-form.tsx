@@ -118,11 +118,11 @@ export function ClientForm({
       case_number: v.case_number?.trim() || null,
       case_status: v.case_status?.trim() || null,
       court: v.court?.trim() || null,
-      responsible_user_id: isEditing
-        ? isMaster
-          ? v.responsible_user_id || null
-          : (initial?.responsible_user_id ?? null)
-        : currentUid,
+      responsible_user_id: isMaster
+        ? v.responsible_user_id || null
+        : isEditing
+          ? (initial?.responsible_user_id ?? null)
+          : currentUid,
       notes_summary: v.notes_summary?.trim() || null,
     };
     let saved;
@@ -272,7 +272,7 @@ export function ClientForm({
           </div>
           <div className="space-y-2">
             <Label>Advogado responsável</Label>
-            {isMaster && isEditing ? (
+            {isMaster ? (
               <Select
                 value={v.responsible_user_id ?? "none"}
                 onValueChange={(val) =>
