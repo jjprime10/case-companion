@@ -51,18 +51,18 @@ export const createUser = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: { full_name: data.full_name },
     });
-    if (error || !created.user) throw new Error(error?.message ?? "Falha ao criar usuário");
+    if (error || !created.user) return { ok: false as const, error: error?.message ?? "Falha ao criar usuário" };
     // remove auto-assigned master if first-user trigger fired in race; ensure correct role
     await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
     const { error: rErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: created.user.id, role: data.role });
-    if (rErr) throw new Error(rErr.message);
+    if (rErr) return { ok: false as const, error: rErr.message };
     await supabaseAdmin
       .from("profiles")
       .update({ full_name: data.full_name })
       .eq("id", created.user.id);
-    return { id: created.user.id };
+    return { ok: true as const, id: created.user.id };
   });
 
 export const updateUserRole = createServerFn({ method: "POST" })
@@ -99,7 +99,7 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
       password: data.password,
     });
-    if (error) throw new Error(error.message);
+    if (error) return { ok: false as const, error: error.message };
     const { data: prof } = await supabaseAdmin
       .from("profiles")
       .select("email")
@@ -113,7 +113,7 @@ export const resetUserPassword = createServerFn({ method: "POST" })
       entity_id: data.user_id,
       details: {},
     });
-    return { ok: true };
+    return { ok: true as const };
   });
 
 export const updateUserSupervisor = createServerFn({ method: "POST" })

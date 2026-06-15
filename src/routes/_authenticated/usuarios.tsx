@@ -82,14 +82,18 @@ function UsersPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await fCreate({ data: { email, password, full_name: name, role } });
-      toast.success("Usuário criado");
-      setOpen(false);
-      setEmail("");
-      setPassword("");
-      setName("");
-      setRole("advogado");
-      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      const res = await fCreate({ data: { email, password, full_name: name, role } });
+      if (!res.ok) {
+        toast.error(res.error);
+      } else {
+        toast.success("Usuário criado");
+        setOpen(false);
+        setEmail("");
+        setPassword("");
+        setName("");
+        setRole("advogado");
+        qc.invalidateQueries({ queryKey: ["admin-users"] });
+      }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -120,10 +124,14 @@ function UsersPage() {
   const doReset = async () => {
     if (!resetFor || resetPwd.length < 8) return;
     try {
-      await fReset({ data: { user_id: resetFor, password: resetPwd } });
-      toast.success("Senha redefinida");
-      setResetFor(null);
-      setResetPwd("");
+      const res = await fReset({ data: { user_id: resetFor, password: resetPwd } });
+      if (!res.ok) {
+        toast.error(res.error);
+      } else {
+        toast.success("Senha redefinida");
+        setResetFor(null);
+        setResetPwd("");
+      }
     } catch (err) {
       toast.error((err as Error).message);
     }
