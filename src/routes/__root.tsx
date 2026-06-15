@@ -82,6 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Sistema Jurídico Interno" },
+      { name: "twitter:description", content: "Plataforma interna de gestão jurídica de clientes." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b9019e82-11cc-4927-ae3d-0bf54e20822c/id-preview-9414e166--23cbfafa-da81-45ed-b8a4-0a8a5c162ca4.lovable.app-1781186717144.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b9019e82-11cc-4927-ae3d-0bf54e20822c/id-preview-9414e166--23cbfafa-da81-45ed-b8a4-0a8a5c162ca4.lovable.app-1781186717144.png" },
     ],
     links: [
       {
