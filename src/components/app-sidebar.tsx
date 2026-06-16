@@ -11,6 +11,8 @@ import {
   Sun,
   Calendar as CalendarIcon,
   ScrollText,
+  Briefcase,
+  ClipboardList,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +33,8 @@ const items = [
   { title: "Painel", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Novo Cliente", url: "/clientes/novo", icon: UserPlus, requireWrite: true },
+  { title: "Processos", url: "/processos", icon: Briefcase },
+  { title: "Tarefas", url: "/tarefas", icon: ClipboardList },
   { title: "Calendário", url: "/calendario", icon: CalendarIcon },
   { title: "Buscar", url: "/buscar", icon: Search },
 ];
