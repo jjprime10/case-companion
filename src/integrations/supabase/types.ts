@@ -127,6 +127,71 @@ export type Database = {
         }
         Relationships: []
       }
+      cases: {
+        Row: {
+          archived: boolean
+          case_number: string | null
+          case_type: string | null
+          claim_value: number | null
+          client_id: string | null
+          court: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          jurisdiction: string | null
+          notes: string | null
+          opening_date: string | null
+          opposing_party: string | null
+          responsible_user_id: string | null
+          status: Database["public"]["Enums"]["case_status"]
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          case_number?: string | null
+          case_type?: string | null
+          claim_value?: number | null
+          client_id?: string | null
+          court?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jurisdiction?: string | null
+          notes?: string | null
+          opening_date?: string | null
+          opposing_party?: string | null
+          responsible_user_id?: string | null
+          status?: Database["public"]["Enums"]["case_status"]
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          case_number?: string | null
+          case_type?: string | null
+          claim_value?: number | null
+          client_id?: string | null
+          court?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jurisdiction?: string | null
+          notes?: string | null
+          opening_date?: string | null
+          opposing_party?: string | null
+          responsible_user_id?: string | null
+          status?: Database["public"]["Enums"]["case_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_files: {
         Row: {
           category: string | null
@@ -310,6 +375,69 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          case_id: string | null
+          client_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          case_id?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          case_id?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -357,7 +485,18 @@ export type Database = {
     }
     Enums: {
       app_role: "master" | "advogado" | "assistente" | "visualizador"
+      case_status:
+        | "new"
+        | "under_analysis"
+        | "awaiting_documents"
+        | "filed"
+        | "hearing_scheduled"
+        | "in_progress"
+        | "suspended"
+        | "closed"
       person_type: "PF" | "PJ"
+      task_priority: "low" | "medium" | "high" | "urgent"
+      task_status: "pending" | "in_progress" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -486,7 +625,19 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["master", "advogado", "assistente", "visualizador"],
+      case_status: [
+        "new",
+        "under_analysis",
+        "awaiting_documents",
+        "filed",
+        "hearing_scheduled",
+        "in_progress",
+        "suspended",
+        "closed",
+      ],
       person_type: ["PF", "PJ"],
+      task_priority: ["low", "medium", "high", "urgent"],
+      task_status: ["pending", "in_progress", "completed"],
     },
   },
 } as const
